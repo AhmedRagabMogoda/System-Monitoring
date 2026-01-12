@@ -18,7 +18,8 @@ The platform consists of multiple independent services, each responsible for a s
 
 Clients send metrics to the system and receive real-time updates using SSE, while the Notification Service pushes alerts to external channels.
 
-![WhatsApp Image 2026-01-11 at 5 15 45 PM](https://github.com/user-attachments/assets/ee6a2b9d-b354-4dd1-bf18-b8b502981f79)
+<img width="1024" height="572" alt="image" src="https://github.com/user-attachments/assets/e6f929a9-608d-4c96-8f19-234232e92a3c" />
+
 
 ---
 
