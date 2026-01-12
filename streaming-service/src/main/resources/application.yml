@@ -1,0 +1,67 @@
+server:
+  port: 8083
+  shutdown: graceful
+
+spring:
+  application:
+    name: streaming-service
+
+  kafka:
+    bootstrap-servers: kafka:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      group-id: streaming-service-group
+
+  data:
+    redis:
+      host: redis
+      port: 6379
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    tags:
+      application: ${spring.application.name}
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+
+logging:
+  level:
+    root: INFO
+    com.monitoring: DEBUG
+    org.springframework.kafka: INFO
+    reactor.kafka: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+
+# Application specific configuration
+app:
+  kafka:
+    topics:
+      metrics-processed: metrics.processed
+      metrics-raw: metrics.raw
+      alerts: alerts
+
+  streaming:
+    heartbeat-interval-seconds: 30
+    buffer-size: 100
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      redis:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s

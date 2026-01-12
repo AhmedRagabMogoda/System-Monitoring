@@ -1,0 +1,63 @@
+# ========================
+# Java  Spring Boot
+# ========================
+.class
+.jar
+.war
+.ear
+.log
+.iml
+.hprof
+
+# Maven  Gradle
+target
+build
+!.mvnwrappermaven-wrapper.jar
+.gradle
+.gradle-cache
+
+# ========================
+# IDE  Editor files
+# ========================
+.idea
+.iws
+.ipr
+.iml
+.vscode
+.settings
+.classpath
+.project
+
+# ========================
+# Operating System files
+# ========================
+.DS_Store
+Thumbs.db
+ehthumbs.db
+desktop.ini
+.swp
+
+# ========================
+# Docker  Docker Compose
+# ========================
+.env
+docker-compose.override.yml
+docker-compose.override.yaml
+
+# ========================
+# Logs
+# ========================
+logs
+.log
+.out
+.tmp
+.bak
+
+# ========================
+# Database  init scripts
+# ========================
+init-db.sql
+init-db.dump
+pgadmin
+.db
+

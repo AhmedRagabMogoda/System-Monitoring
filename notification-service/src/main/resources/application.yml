@@ -1,0 +1,117 @@
+server:
+  port: 8084
+  shutdown: graceful
+
+spring:
+  application:
+    name: notification-service
+
+  kafka:
+    bootstrap-servers: kafka:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      group-id: notification-service-group
+
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:your-email@gmail.com}
+    password: ${MAIL_PASSWORD:your-app-password}
+
+  thymeleaf:
+    cache: false
+    prefix: classpath:/templates/
+    suffix: .html
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    tags:
+      application: ${spring.application.name}
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+
+logging:
+  level:
+    root: INFO
+    com.monitoring: DEBUG
+    org.springframework.kafka: INFO
+    org.springframework.mail: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+
+# Application specific configuration
+app:
+  kafka:
+    topics:
+      alerts: alerts
+
+  notifications:
+    enabled-channels:
+      - slack
+      - email
+      - webhook
+
+    slack:
+      enabled: true
+      webhook-url: ${SLACK_WEBHOOK_URL:https://hooks.slack.com/services/fallback}
+      default-channel: "#alerts"
+      mention-on-critical: true
+      critical-user-id: "@oncall"
+
+    email:
+      enabled: true
+      from: ${MAIL_FROM:monitoring@example.com}
+      from-name: "System Monitoring"
+      default-recipients:
+        - ops-team@example.com
+      cc-on-critical:
+        - manager@example.com
+      subject-prefix: "[ALERT]"
+
+    webhook:
+      enabled: true
+      endpoints:
+        - name: "incident-management"
+          url: ${WEBHOOK_URL_1:https://example.com/fallback-webhook1}
+          enabled: true
+          retry-attempts: 3
+        - name: "pagerduty"
+          url: ${WEBHOOK_URL_2:https://example.com/fallback-webhook2}
+          enabled: false
+          retry-attempts: 3
+
+    throttling:
+      enabled: true
+      max-notifications-per-hour: 50
+      duplicate-suppression-minutes: 15
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      slack:
+        registerHealthIndicator: true
+      email:
+        registerHealthIndicator: true
+      webhook:
+        registerHealthIndicator: true
+
+  retry:
+    instances:
+      notification:
+        maxAttempts: 3
+        waitDuration: 1s
+        exponentialBackoffMultiplier: 2
+        retryExceptions:
+          - java.io.IOException
+          - java.util.concurrent.TimeoutException

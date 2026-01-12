@@ -1,0 +1,86 @@
+server:
+  port: 8082
+  shutdown: graceful
+
+spring:
+  application:
+    name: processing-alert-service
+
+  kafka:
+    bootstrap-servers: kafka:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      group-id: processing-alert-group
+
+  r2dbc:
+    url: r2dbc:postgresql://postgres:5432/monitoring
+    username: admin
+    password: admin123
+
+  flyway:
+    enabled: true
+    url: jdbc:postgresql://postgres:5432/monitoring
+    user: admin
+    password: admin123
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+
+  data:
+    redis:
+      host: redis
+      port: 6379
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    tags:
+      application: ${spring.application.name}
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+
+logging:
+  level:
+    root: INFO
+    com.monitoring: DEBUG
+    org.springframework.kafka: INFO
+    org.springframework.r2dbc: DEBUG
+    reactor.kafka: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+
+# Application specific configuration
+app:
+  kafka:
+    topics:
+      metrics-raw: metrics.raw
+      metrics-processed: metrics.processed
+      alerts: alerts
+
+  cache:
+    ttl-minutes: 60
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      redis:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+      postgres:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s

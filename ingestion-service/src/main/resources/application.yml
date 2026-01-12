@@ -1,0 +1,62 @@
+server:
+  port: 8081
+  shutdown: graceful
+
+spring:
+  application:
+    name: ingestion-service
+
+  kafka:
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    bootstrap-servers: kafka:9092
+
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      show-details: always
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+logging:
+  level:
+    root: INFO
+    com.monitoring: DEBUG
+    org.springframework.kafka: INFO
+    reactor.kafka: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# Application specific configuration
+app:
+  kafka:
+    topics:
+      metrics-raw: metrics.raw
+
+  validation:
+    max-metric-value: 100000
+    allowed-environments: dev,staging,production
+
+resilience4j:
+  ratelimiter:
+    instances:
+      metricsIngestion:
+        limitForPeriod: 1000
+        limitRefreshPeriod: 1s
+        timeoutDuration: 5s
+        registerHealthIndicator: true
+        eventConsumerBufferSize: 100
